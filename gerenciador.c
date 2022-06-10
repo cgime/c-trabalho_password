@@ -26,6 +26,7 @@ void inic();
 void salvar_senha(CADASTRO pessoa);
 int listar_finalidades();
 void print_finalidades(CADASTRO pessoa, long int contador);
+void mostrar_senha(int posicao);
 
 void main(){
     puts("\n\n*****Bem vindo ao seu gerenciador de senhas!*****");
@@ -37,7 +38,7 @@ void main(){
                 CADASTRO pessoa;
                 puts("Digite a finalidade da senha: ");
                 fflush(stdin);
-                gets(pessoa.finalidade);
+                fgets(pessoa.finalidade, 20, stdin);
                 get_senha(&pessoa);
                 printf("\n\nSenha salva com sucesso!\n");
                 printf("Finalidade: %s. --- senha: %s\n", pessoa.finalidade, pessoa.senha);
@@ -119,13 +120,13 @@ void get_senha(CADASTRO *pessoa){
 
 void senha_manual(CADASTRO *pessoa){ 
     /* Verifica se uma senha manual está de acordo com os parâmetros do programa */
-    puts("Sua senha deve ter no minimo oito caracteres, pelo menos"
-    " uma letra maiuscula, pelo menos uma minuscula e um caractere numerico"
-    " ou especial (@, #, $, %%, ou &)");
+    puts("Sua senha deve ter no minimo oito e no maximo 20 caracteres, pelo menos"
+    "\numa letra maiuscula, pelo menos uma minuscula e um caractere numerico"
+    "\nou especial (@, #, $, %%, ou &)");
     while(TRUE){
         int controle = FALSE;
         fflush(stdin);
-        gets(pessoa->senha);
+        fgets(pessoa->senha, 20, stdin);
         if (strlen(pessoa->senha)<8){
             puts("Sua senha deve ter no minimo 8 caracteres.");
             controle = TRUE;
