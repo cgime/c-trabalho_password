@@ -24,7 +24,7 @@ int oneisespecial(char senha[]);
 int oneisnumeric(char senha[]);
 void inic();
 void salvar_senha(CADASTRO pessoa);
-void listar_finalidades();
+int listar_finalidades();
 void print_finalidades(CADASTRO pessoa, long int contador);
 
 void main(){
@@ -45,7 +45,10 @@ void main(){
                 break;
             }
             case 2:{ /* Apresentar senha salva*/
-                listar_finalidades();
+                printf("\n\n\n\n\nSenhas salvas pelo usuario:\n");
+                printf("Escolha um numero relativo a senha que deseja visualizar:\n\n");
+                int cont = listar_finalidades();
+                mostrar_senha(escolher_finalidade(cont));
                 break;
             }
             case 3:{ /* Apagar senha*/
@@ -89,6 +92,7 @@ void inic(){
             exit(1);
         }
     }
+    fclose(fp);
 }
 
 void get_senha(CADASTRO *pessoa){
@@ -222,6 +226,7 @@ int oneisnumeric(char senha[]){ /*ESTÁ OK*/
 }
 
 void salvar_senha(CADASTRO pessoa){ /* Ainda não finalizado*/
+    fp = fopen(ARQ, "a+b");
     fseek(fp, 0L, SEEK_END);
     if (fwrite(&pessoa, sizeof(pessoa),1, fp) != 1){
         printf("Adicionar senha: Falhou a escrita do Registro!\n");
@@ -229,10 +234,10 @@ void salvar_senha(CADASTRO pessoa){ /* Ainda não finalizado*/
     fclose(fp);
 }
 
-void listar_finalidades(){
+int listar_finalidades(){
     long int contador=0;
     CADASTRO info;
-    fp = fopen("senhas.dat", "r+b");
+    fp = fopen(ARQ, "rb");
     rewind(fp);
     while (1){
         if (fread(&info, sizeof(CADASTRO), 1, fp) != 1){
@@ -240,10 +245,44 @@ void listar_finalidades(){
         }
         print_finalidades(info, contador);
         contador++;
-
     }
+    fclose(fp);
+    return contador;
 }
 
 void print_finalidades(CADASTRO pessoa, long int contador){
     printf("%3d - %20s\n", contador+1, pessoa.finalidade);
 }
+
+int escolher_finalidade(int cont){
+    int escolha = -1;
+    while(escolha == -1){
+        scanf(" %d", &escolha);
+        if (escolha<0 || escolha>cont){
+            puts("Valor invalido. Tente novamente!");
+            continue;
+        }
+    }
+    return escolha;
+}
+
+void mostrar_senha(int posicao){
+    CADASTRO info;
+    fp = fopen(ARQ, "rb");
+    if (fp==NULL){
+        puts("Erro na abertura do arquivo!");
+        exit(1);
+    }
+    fseek(fp, (long) (posicao-1), SEEK_SET);
+    if (fread(&info, sizeof(CADASTRO), 1, fp) != 1){
+        puts("Nao foi possivel ler a informacao solicitada!");
+        exit(1);
+    }
+    printf("Senha: %s\n", info.senha);
+    puts("Pressione enter para continuar...");
+    fflush(stdin);
+    getchar();
+
+    fclose(fp);
+}
+
