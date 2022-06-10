@@ -5,12 +5,14 @@
 #include <time.h>
 #define TRUE 1
 #define FALSE 0
+#define ARQ "senhas.dat"
 
 typedef struct cadastro{
     char finalidade[21];
     char senha[21];
 }CADASTRO;
 
+FILE *fp;
 
 int menu();
 void get_senha( CADASTRO *pessoa);
@@ -20,9 +22,14 @@ int oneisupper(char senha[]);
 int oneislower(char senha[]);
 int oneisespecial(char senha[]);
 int oneisnumeric(char senha[]);
+void inic();
+void salvar_senha(CADASTRO pessoa);
+void listar_finalidades();
+void print_finalidades(CADASTRO pessoa, long int contador);
 
 void main(){
-    puts("\n\n*****Bem vindo ao seu gerenciador de senhas!*****\n\n");
+    puts("\n\n*****Bem vindo ao seu gerenciador de senhas!*****");
+    inic();
     int fica_no_loop = TRUE;
     while (fica_no_loop){
         switch (menu()){
@@ -34,11 +41,11 @@ void main(){
                 get_senha(&pessoa);
                 printf("\n\nSenha salva com sucesso!\n");
                 printf("Finalidade: %s. --- senha: %s\n", pessoa.finalidade, pessoa.senha);
-                // salvar_senha(pessoa);
+                salvar_senha(pessoa);
                 break;
             }
             case 2:{ /* Apresentar senha salva*/
-
+                listar_finalidades();
                 break;
             }
             case 3:{ /* Apagar senha*/
@@ -73,6 +80,17 @@ int menu(){ /*ESTÁ OK*/
     }
 }
 
+void inic(){
+    fp = fopen(ARQ, "r+b");
+    if (fp == NULL){
+        fp = fopen(ARQ, "w+b");
+        if (fp == NULL){
+            fprintf(stderr, "Nao foi possivel criar arquivo de dados!!!\n");
+            exit(1);
+        }
+    }
+}
+
 void get_senha(CADASTRO *pessoa){
     while(1){
         puts("Como deseja gerar sua senha?");
@@ -95,7 +113,7 @@ void get_senha(CADASTRO *pessoa){
     }
 }
 
-void senha_manual(CADASTRO *pessoa){
+void senha_manual(CADASTRO *pessoa){ 
     /* Verifica se uma senha manual está de acordo com os parâmetros do programa */
     puts("Sua senha deve ter no minimo oito caracteres, pelo menos"
     " uma letra maiuscula, pelo menos uma minuscula e um caractere numerico"
@@ -131,7 +149,8 @@ void senha_manual(CADASTRO *pessoa){
     }
 }
 
-void senha_automatica(CADASTRO *pessoa){ /*Está ok */
+void senha_automatica(CADASTRO *pessoa){
+    /* Cria uma senha automática segundo os parâmetros do problema */
     char senha_aux[21];
     //letra maiuscula - 40%; letra minuscula - 40%; numero + caracter especial - 20%
     srand((unsigned int)(time(NULL)));
@@ -202,38 +221,29 @@ int oneisnumeric(char senha[]){ /*ESTÁ OK*/
     return FALSE;
 }
 
-// void salvar_senha(CADASTRO *pessoa){ /* Ainda não finalizado*/
-    // FILE *senhas_salvas;
-    // FILE* finalidades;
-    // senhas_salvas = fopen("senhas_salvas.bin", "a+b");
-    // if (senhas_salvas == NULL){
-    //     puts("Erro ao tentar abrir arquivo de senhas!");
-    //     exit(0);
-    // }
-    
-    // finalidade = fopen("finalidades.bin", "a+b");
-    // if (finalidade == NULL){
-    //     puts("Erro ao tentar abrir arquivo de finalidades!");
-    //     exit(0);
-    // }
+void salvar_senha(CADASTRO pessoa){ /* Ainda não finalizado*/
+    fseek(fp, 0L, SEEK_END);
+    if (fwrite(&pessoa, sizeof(pessoa),1, fp) != 1){
+        printf("Adicionar senha: Falhou a escrita do Registro!\n");
+    }
+    fclose(fp);
+}
 
-    // fwrite(finalidade, sizeof(char), strlen(finalidade)+1, finalidade);
-    // fwrite(senha, sizeof(char), strlen(senha)+1, senhas_salvas);
+void listar_finalidades(){
+    long int contador=0;
+    CADASTRO info;
+    fp = fopen("senhas.dat", "r+b");
+    rewind(fp);
+    while (1){
+        if (fread(&info, sizeof(CADASTRO), 1, fp) != 1){
+            break;
+        }
+        print_finalidades(info, contador);
+        contador++;
 
-    // fclose(senhas_salvas);
-// }
+    }
+}
 
-// void print_finalidades(){ /* Ainda não finalizado */
-//     char finalidade[20];
-//     printf("%10s - %20s", "numero", "Finalidade");
-//     for (int i=0;i<100;i++){
-//         printf("%10d    %s\n", i+1, finalidade[i]);
-//     }
-    
-//     puts("Selecione uma finalidade:");
-
-// }
-
-// void apagar_senha(){ /* Ainda não finalizado */
-
-// }
+void print_finalidades(CADASTRO pessoa, long int contador){
+    printf("%3d - %20s\n", contador+1, pessoa.finalidade);
+}
